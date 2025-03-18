@@ -50,14 +50,15 @@ export default function VerificationEmail({ username, otp }: VerificationEmailPr
             If you did not request this code, please ignore this email.
           </Text>
         </Row>
-        {/* <Row>
+        <Row>
           <Button
+          className='bg-blue-700 px-3 py-1 rounded-lg text-black'
             href={`http://localhost:3000/verify/${username}`}
-            style={{ color: '#61dafb' }}
+            // style={{ color: '#61dafb' }}
           >
             Verify here
           </Button>
-        </Row> */}
+        </Row>
       </Section>
     </Html>
   );
