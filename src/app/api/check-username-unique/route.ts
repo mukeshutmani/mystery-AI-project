@@ -46,7 +46,9 @@ export async function GET(request: Request) {
       username,
       isVerified: true,
     });
-
+     
+    console.log(existingVerifiedUser);
+    
     if (existingVerifiedUser) {
       return Response.json(
         { success: false, message: "Username is already taken" },
