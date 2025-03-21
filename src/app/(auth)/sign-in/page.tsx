@@ -34,25 +34,33 @@ const page = () => {
  
 
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
+      setIsSubmitting(true)
+
        const result = await signIn('credentials', {
           redirect: false,
           identifier: data.identifier,
           password: data.password,
         })
-
-        console.log(result);
+      
+        toast("login Successfully")
+        console.log("Result",result);
         
 
         if(result?.error) {
+         
           if(result.error == "CredentialsSignin"){
-            toast("login failed")
+            toast("login failed" )
           } else {
-            toast(result.error, {description: "Error"})
+            // toast(result.error, {description: "Error"})
+            toast("login failed")
           }
+          setIsSubmitting(false)
         } 
         if(result?.url){
+          console.log("URL",result?.url);
           router.replace('/dashboard')
           toast("Login Successfully")
+          setIsSubmitting(false)
         }
         
     
@@ -109,6 +117,7 @@ const page = () => {
           
          <Button
          type="submit" disabled={isSubmitting}
+         className="cursor-pointer"
          >
            {isSubmitting ? (
              <>

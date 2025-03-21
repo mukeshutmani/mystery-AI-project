@@ -9,6 +9,7 @@ export async function  DELETE(request: Request, {params}: {params: {messageid: s
 
     const messageId = params.messageid;
     await dbConnect();
+    
 
     const session = await getServerSession(authOptions);
     // type assertion

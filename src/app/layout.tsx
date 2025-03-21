@@ -1,10 +1,15 @@
+// 'use client'
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 // import AuthProvider from "@/context/AuthProvider";
 import { Toaster } from "@/components/ui/sonner"
 import AuthProvider from "@/context/AuthProvider";
-import Navbar from "@/components/Navbar";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
+import { QueryProvider } from "@/provider/QueryProvider";
+// import Navbar from "@/components/Navbar";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,15 +31,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+   
   return (
     <html lang="en">
+      
+     
+      
+     
       <AuthProvider>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* <Navbar /> */}
-        {children}
-        {/* <Toaster /> */}
+        <QueryProvider>
+           {children}
+        </QueryProvider>
+        
+      
       </body>
 
       </AuthProvider>
