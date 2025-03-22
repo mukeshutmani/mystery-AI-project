@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { CardHeader, CardContent, Card } from '@/components/ui/card';
 import { useCompletion } from 'ai/react';
+import { toast } from 'react-toastify'
 import {
   Form,
   FormControl,
@@ -17,13 +18,11 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
-// import { toast } from '@/components/ui/use-toast';
 import * as z from 'zod';
 import { ApiResponse } from '@/types/ApiResponse';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { messagesSchema } from '@/schemas/messageSchema';
-import { toast } from 'sonner';
 
 import {useQuery} from '@tanstack/react-query'
 
@@ -33,37 +32,38 @@ import {useQuery} from '@tanstack/react-query'
 export default function SendMessage() {
  
 
-
+  const [Loading, setLoading] = useState(false);
 
   const fetchSuggestedMessages = async () => {
-    setIsLoading(true)
     try {
+
+      if(!Loading){
+            return
+      }
+      console.log("Fetching Suggested Messages");
       
       const response = await axios.post('/api/suggest-message')
-
-      const extractData = response.data?.choices[0]?.message?.content;
+      const extractData = response.data?.choices[0]?.message?.content ;
       const replaceData = extractData.replace(/[{}]/g, "").trim();
       const data: string = replaceData.replace(/\\boxed"/g, "").replace(/"$/, "") 
-      
       return data;
      
     } catch (error: any) {
       console.error('Error Suggesting messages:', error);
-    } finally {
-       setIsLoading(false)
-    }
+    } 
   };
 
+  
+
+ const {data, isLoading: QueryLoading , error:any, refetch, isFetching } = useQuery({
+    queryKey: ["questions"],
+    queryFn: fetchSuggestedMessages
+ })
+ console.log(QueryLoading);
 
 
-   const {data, isLoading: boolean, error:any } = useQuery({
-      queryKey: ["questions"],
-      queryFn: fetchSuggestedMessages
-   })
-   console.log("React Query",data);
 
-
-   const initialMessageString =
+  const initialMessageString =
    "What's your favorite movie?||Do you have any pets?||What's your dream job?";
 
    const {
@@ -83,23 +83,10 @@ export default function SendMessage() {
     return data.split(specialChar);
   };
 
-  
-  
-  
-
-  
- 
 
 
   const params = useParams<{ username: string }>();
   const username = params.username;
-
-  // const [aiMessages, setAiMessages] = useState("");
-  // console.log("Response positive", aiMessages );
-  
-  // console.log("Donst Hide");
-  
-  
 
   const form = useForm<z.infer<typeof messagesSchema>>({
     resolver: zodResolver(messagesSchema),
@@ -111,27 +98,24 @@ export default function SendMessage() {
     form.setValue('content', message);
   };
 
-  const [isLoading, setIsLoading] = useState(false);
-
-
-
+  
 
 
   const onSubmit = async (data: z.infer<typeof messagesSchema>) => {
-    setIsLoading(true);
+    setLoading(true);
     try {
       const response = await axios.post<ApiResponse>('/api/send-message', {
         ...data,
         username,
       });
 
-      toast("Send Messages Successfully");
+      toast.success(response.data.message, {position: "top-right"});
       form.reset({ ...form.getValues(), content: '' });
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
-      toast("Failed to send Messages");
+      toast.error(axiosError.response?.data.message, {position: "top-right"});
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -167,13 +151,13 @@ export default function SendMessage() {
             )}
           />
           <div className="flex justify-center">
-            {isLoading ? (
+            {Loading ? (
               <Button disabled>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Please wait
               </Button>
             ) : (
-              <Button type="submit" disabled={isLoading || !messageContent}>
+              <Button type="submit" disabled={Loading || !messageContent}>
                 Send It
               </Button>
             )}
@@ -185,11 +169,11 @@ export default function SendMessage() {
         <div className="space-y-2">
           <Button
             
-            onClick={fetchSuggestedMessages}
+            onClick={() => refetch()}
             className="my-4 cursor-pointer"
-            disabled={isSuggestLoading}
+            disabled={isFetching }
           >
-           { isLoading? "Loading..." : "Suggest Messages"}
+           { isFetching ? "Loading..." : "Suggest Messages"}
           </Button>
           <p>Click on any message below to select it.</p>
         </div>

@@ -15,7 +15,7 @@ import { User } from "next-auth"
 import { useSession } from "next-auth/react"
 import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
-import { toast } from "sonner"
+import { toast } from "react-toastify"
 
 
 function UserDashboard() {
@@ -48,8 +48,9 @@ function UserDashboard() {
      setIsSwitchLoading(true)
      try {
             const response = await axios.get<ApiResponse>(`/api/accept-message`);
-            setValue('acceptMessages', response.data.isAcceptingMessage as any)
-
+            setValue('acceptMessages', response.data.isAcceptingMessages as boolean)
+            console.log(response);
+            
      } catch (error) {
           const axiosError: any = error as AxiosError<ApiResponse>;
           toast(axiosError)
@@ -59,7 +60,7 @@ function UserDashboard() {
 
    },[setValue])
 
-
+  
    const fetchMessages = useCallback( async(refresh: boolean = false) => {
       setIsLoading(true)         
       setIsSwitchLoading(false)
@@ -70,12 +71,12 @@ function UserDashboard() {
        
        setMessages(response?.data?.message as any)
 
-       if(refresh){
-           toast("Refreshed Messages: Showing Latest Messages")
-       }
+       
     } catch (error) {
       const axiosError: any = error as AxiosError<ApiResponse>;
-      toast(axiosError)
+      toast.error(axiosError.response?.data.message, {
+        autoClose:1000
+      })
     } finally {
       setIsSwitchLoading(false)
       setIsLoading(false)
@@ -97,7 +98,7 @@ function UserDashboard() {
           acceptMessages: !acceptMessages
          })
          setValue('acceptMessages', !acceptMessages)
-         toast("")
+         toast.success(response.data.message)
      } catch (error) {
       const axiosError: any = error as AxiosError<ApiResponse>;
       toast(axiosError)
